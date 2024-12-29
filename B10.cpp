@@ -2,17 +2,18 @@
 #define maxSize 100
 
 int currentSize=0,arr[maxSize];
-int smnc; //sortMenuChoice
+int sortMNC; //sortMenuChoice, sortMNC = 1(mang giam dan),sortMNC = 2(mang tang dan)
 
-void inputArray();
-void printArray();
-int addArray();
-void fixArray();
-void deleteArray();
-void sortMenu();
-void sortArray(int choice);
-int linearSearch(int n);
-int binarySearch(int n,int choice);
+void inputArray(); //Ham nhap mang
+void printArray(); // Ham xuat mang
+void fixArray(); // Ham sua phan tu trong mang theo vi tri
+void deleteArray(); // Ham xoa phan tu trong mang theo vi tri
+void sortMenu(); // MENU sap xep {TangDan,GiamDan} dung Insertion sort
+void sortArray(int sortMNC);// ham sap xep
+int addArray();// Them phan tu vao mang
+int checkArray(int sortMNC); // Dung de kiem tra xem mang da duoc sap xep hay chua
+int linearSearch(int n);//Tim kiem tuyen tinh
+int binarySearch(int n,int sortMNC);// Tim kiem nhi phan
 
 int main(){
 	int choice=0;
@@ -63,6 +64,7 @@ int main(){
 				break;
 			case 6://Menu sap xep
 				{
+					choice=0;//khoi tao lai gia tri cua choice
 					if(currentSize){
 						sortMenu();
 					}
@@ -71,13 +73,13 @@ int main(){
 			case 7://Menu tim kiem
 				{
 					if(currentSize){
-						int smn,searchNum; // searchmenuchoice
+						int searchMN,searchNum; // searchmenuchoice
 						do{
 							printf("=-=-=-=-=-=-=-=-=-=-=-SEARCH MENU-=-=-=-=-=-=-=-=-=-=-=\n");
 							printf("1. Linear Search\n");
 							printf("2. Binary Search\n");
-							printf("Lua chon cua ban: ");	scanf("%d",&smn);
-							switch(smn){
+							printf("Lua chon cua ban: ");	scanf("%d",&searchMN);
+							switch(searchMN){
 								case 1:
 									{
 										printf("Moi nhap vao gia tri ban can tim kiem: ");	scanf("%d",&searchNum);
@@ -91,22 +93,25 @@ int main(){
 									break;
 								case 2:
 									{
-										printf("De thuc hien binary search xin moi ban chon menu sap xep truoc khi thuc hien thao tac !!\n");
-										sortMenu();
-										printf("\nMoi nhap vao gia tri ban can tim kiem: ");	scanf("%d",&searchNum);
-										
-										if(binarySearch(searchNum,smnc)){
-											printf("Phan tu %d ton tai trong mang",searchNum);
+										if(!checkArray(sortMNC)){
+											printf("De thuc hien binary search xin moi ban chon menu sap xep truoc khi thuc hien thao tac !!\n");
 										}
 										else{
-											printf("Phan tu %d khong ton tai trong mang",searchNum);
+											printf("\nMoi nhap vao gia tri ban can tim kiem: ");	scanf("%d",&searchNum);
+										
+											if(binarySearch(searchNum,sortMNC)){
+												printf("Phan tu %d ton tai trong mang",searchNum);
+											}
+											else{
+												printf("Phan tu %d khong ton tai trong mang",searchNum);
+											}
 										}
 									}
 									break;
 								default:
 									printf("Gia tri nhap vao khong hop le vui long nhap lai !!\n");
 							}
-						}while(smnc < 1 || smnc > 2);
+						}while(searchMN < 1 || searchMN > 2);
 						
 					}
 				}
@@ -204,24 +209,25 @@ void sortMenu(){
 	printf("=-=-=-=-=-=-=-=-=-=-=-SORT MENU-=-=-=-=-=-=-=-=-=-=-=\n");
 	printf("1. Giam dan\n");
 	printf("2. Tang dan\n");
-	printf("Lua chon cua ban: ");	scanf("%d",&smnc);
-	while(smnc != 1 && smnc != 2){
-		printf("Gia tri ban nhap vao khong hop le vui long nhap lai: ");	scanf("%d",&smnc);
+	printf("Lua chon cua ban: ");	scanf("%d",&sortMNC);
+	while(sortMNC != 1 && sortMNC != 2){
+		printf("Gia tri ban nhap vao khong hop le vui long nhap lai: ");	scanf("%d",&sortMNC);
 	}
-	sortArray(smnc);
+	sortArray(sortMNC);
 }
 
-void sortArray(int choice){
-	for(int i=0;i<currentSize-1;i++){
-		int Index=i;
-		for(int j=i+1;j<currentSize;j++){
-			if((choice == 1)?(arr[j] > arr[Index]):(arr[j] < arr[Index])){
-				Index = j;
-			}
+void sortArray(int sortMNC){
+	//Insertion Sort
+	for(int i=1;i<currentSize;i++){
+		int Index=i-1,Value=arr[i];
+		while(Index >= 0 && (sortMNC==1)?arr[Index] < Value:arr[Index] > Value){
+			arr[Index+1] = arr[Index];
+			Index--;
 		}
-		int tmp=arr[i]; arr[i] = arr[Index]; arr[Index] = tmp;
+		arr[Index+1]=Value;
 	}
-	if(choice == 1){
+	
+	if(sortMNC == 1){
 		printf("Da sap xep giam dan xong !!");
 	}
 	else	printf("Da sap xep tang dan xong !!");
@@ -234,15 +240,45 @@ int linearSearch(int n){
 	return 0;
 }
 
-int binarySearch(int n,int choice){
+int binarySearch(int n,int sortMNC){
 	int start=0,end=currentSize-1,mid;
 	while(start <= end){
 		mid = start + (end - start)/2;
 		if(n == arr[mid])	return 1;
 		
-		else if((choice == 1)?arr[mid] < n:arr[mid] > n)	end = mid - 1;
+		else if((sortMNC == 1)?arr[mid] < n:arr[mid] > n)	end = mid - 1;
 		
 		else	start = mid + 1;
 	}
 	return 0;
+}
+
+int checkArray(int sortMNC){
+	int flag1=1,flag2=1;// flag1 dung de kiem tra mang giam dan, flag2 dung de kiem tra mang tang dan
+	
+	for(int i=1;i<=2;i++){
+		for(int j=0;j<currentSize-1;j++){
+			if(i == 1){
+				if(arr[j] < arr[j+1]){
+					flag1=0;
+					continue;
+				}
+			}
+			if(i==2){
+				if(arr[j] > arr[j+1]){
+					flag2=0;
+					break;
+				}
+			}
+		}
+	}
+	
+	if(flag1 + flag2 == 2){
+		return 1;//Mang bang nhau tu dau den cuoi
+	}
+	//dat gia tri moi cho choice de biet duoc hien tai choice dang o trang thai mang tang dan hay giam dan
+	if(flag1)	sortMNC = 1;
+	if(flag2)	sortMNC = 2;
+	
+	return (flag1+flag2);
 }
